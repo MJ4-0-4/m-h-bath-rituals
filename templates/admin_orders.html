@@ -2,41 +2,105 @@
 <html>
 <head>
     <title>Manage Orders - Admin</title>
-    <!-- ... (head content is unchanged) ... -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Epilogue%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+    <style>
+        /* Simple styling for the details dropdown arrow */
+        details > summary {
+            cursor: pointer;
+            list-style: none; /* Remove default marker */
+        }
+        details > summary::-webkit-details-marker {
+            display: none; /* Remove default marker in Chrome */
+        }
+        details > summary .arrow-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        details[open] > summary .arrow-down {
+            transform: rotate(90deg);
+        }
+    </style>
 </head>
 <body class="bg-gray-50" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
     <div class="container mx-auto p-4 md:p-8">
-        <!-- ... (Header and Nav are unchanged) ... -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-[#181411]">Admin Panel</h1>
+            <div>
+                <a href="{{ url_for('home') }}" class="text-sm text-blue-600 hover:underline mr-4">← Back to Site</a>
+                <a href="{{ url_for('logout') }}" class="text-sm text-red-600 hover:underline">Logout</a>
+            </div>
+        </div>
+        
+        <!-- Admin Navigation -->
+        <div class="mb-6 pb-2 border-b">
+            <a href="{{ url_for('admin') }}" class="text-lg font-medium text-gray-600 hover:text-indigo-600 mr-6">Manage Products</a>
+            <a href="{{ url_for('admin_orders') }}" class="text-lg font-bold text-indigo-600 mr-6">Manage Orders</a>
+        </div>
+        
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold text-[#181411] mb-4">Received Orders</h2>
+            
             {% if not orders %}
                 <p class="text-gray-600">You have not received any orders yet.</p>
             {% else %}
                 <div class="space-y-4">
                 {% for order in orders %}
-                    <details class="bg-gray-50 p-4 rounded-lg border">
-                        <summary class="flex justify-between items-center font-medium">
-                            <div><span class="font-bold">Order #{{ order.id }}</span><span class="text-gray-600 mx-2">|</span><span class="text-sm">{{ order.date }}</span></div>
+                    <details class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <summary class="flex justify-between items-center font-medium text-gray-800">
+                            <div class="flex items-center gap-4">
+                                <span class="arrow-down text-gray-400">►</span>
+                                <div>
+                                    <span class="font-bold">Order #{{ order.id }}</span>
+                                    <p class="text-sm text-gray-500">{{ order.date_created.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                </div>
+                            </div>
                             <div class="text-right">
-                                <!-- PRICE FORMATTING UPDATED HERE -->
-                                <span class="font-bold text-lg">{{ "PKR %d" | format(order.totals.total) }}</span>
+                                <span class="font-bold text-lg text-indigo-600">{{ "PKR %d" | format(order.totals.total) }}</span>
                             </div>
                         </summary>
-                        <div class="mt-4 pt-4 border-t">
-                            <h4 class="font-bold mb-2">Ordered Items</h4>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <!-- ... (table head is unchanged) ... -->
-                                <tbody>
-                                {% for item in order['items'] %}
-                                    <tr>
-                                        <td class="px-4 py-2">{{ item.name }}</td>
-                                        <td class="px-4 py-2 text-center">{{ item.quantity }}</td>
-                                        <!-- PRICE FORMATTING UPDATED HERE -->
-                                        <td class="px-4 py-2 text-right">{{ "PKR %d" | format(item.item_total) }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Customer Details Column -->
+                            <div>
+                                <h4 class="font-bold text-gray-700 mb-2">Customer Details</h4>
+                                <div class="text-sm space-y-1 text-gray-600">
+                                    <p><strong>Name:</strong> {{ order.full_name }}</p>
+                                    <p><strong>Email:</strong> {{ order.email }}</p>
+                                    <p><strong>Phone:</strong> {{ order.phone }}</p>
+                                    <p><strong>Address:</strong> {{ order.address1 }}{% if order.address2 %}, {{ order.address2 }}{% endif %}, {{ order.city }}, {{ order.state }} {{ order.zipcode }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Ordered Items Column -->
+                            <div>
+                                <h4 class="font-bold text-gray-700 mb-2">Ordered Items</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left font-medium text-gray-500">Product</th>
+                                                <th class="px-4 py-2 text-center font-medium text-gray-500">Qty</th>
+                                                <th class="px-4 py-2 text-right font-medium text-gray-500">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                        {% for item in order.items %}
+                                            <tr>
+                                                <td class="px-4 py-2 whitespace-nowrap">{{ item.name }}</td>
+                                                <td class="px-4 py-2 text-center">{{ item.quantity }}</td>
+                                                <td class="px-4 py-2 text-right">{{ "PKR %d" | format(item.item_total) }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </details>
                 {% endfor %}
