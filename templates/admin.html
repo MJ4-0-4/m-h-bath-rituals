@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin - M&H Bath Rituals</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Epilogue%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+  </head>
+  <body class="bg-gray-50" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+    <div class="container mx-auto p-4 md:p-8">
+      <!-- ... (Header and Nav are unchanged) ... -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-[#181411] mb-4">Manage Products</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for product in products %}
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><img src="{{ product.image }}" alt="{{ product.name }}" class="h-12 w-12 object-cover rounded"></td>
+                <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">{{ product.name }}</div><div class="text-sm text-gray-500">{{ product.description }}</div></td>
+                <!-- PRICE FORMATTING UPDATED HERE -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ "PKR %d" | format(product.price) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="{{ url_for('delete_product', product_id=product.id) }}" onclick="return confirm('Are you sure you want to delete this product?');" class="text-red-600 hover:text-red-900">Delete</a></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No products found.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

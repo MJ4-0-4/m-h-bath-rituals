@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "date": "2025-07-05 20:15:01",
+    "customer_info": {
+      "full_name": "maryam j",
+      "email": "maryamjaved2468@gmail.com",
+      "phone": "03330466370",
+      "address1": "NA",
+      "address2": "na",
+      "city": "LAHORE",
+      "state": "na",
+      "zipcode": "54000"
+    },
+    "items": [
+      {
+        "id": 3,
+        "name": "Eucalyptus Bliss",
+        "price": 850,
+        "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAT1ppVjRV0f2mLKTgCTTAm7N8hAQGZsBRUun0yXK5vqFhgufqJRb530hadSfna9tXD_rPl3M9m5Ha9J6ZAPBA6QiHAgl5nCzBP4Q3WISGPWG4ygEl3vyfRvm_Q6wZvLgJ-2tcWjOgxAH1G6Z64GWoyg0gwhlM65EPU8RBQKWWpVLbLuGuXXhHIr6z0JiJ7vQh_zmjs_fdRMWpzVS2AHutHReilx0ZE69_kAmJtHyxM8vI8n4VWC9JJdUF6ckMTj23stAzQZ1wZ5JI4",
+        "quantity": 1,
+        "item_total": 850
+      }
+    ],
+    "totals": {
+      "subtotal": 850,
+      "shipping": 500,
+      "tax": 68,
+      "total": 1418
+    }
+  }
+]

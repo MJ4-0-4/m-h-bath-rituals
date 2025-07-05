@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Epilogue%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+    <title>Shop - M&H Bath Rituals</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body>
+    <div class="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+      <div class="pb-28">
+        <div class="flex items-center bg-white p-4 pb-2 justify-between">
+          <a href="{{ url_for('home') }}" class="text-[#181411] flex size-12 shrink-0 items-center" data-icon="ArrowLeft" data-size="24px" data-weight="regular">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+              <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+            </svg>
+          </a>
+          <h2 class="text-[#181411] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Shop</h2>
+        </div>
+
+        <!-- **** FLASH MESSAGE BLOCK WITH CLOSE BUTTON **** -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="p-4 space-y-2">
+              {% for category, message in messages %}
+                <div class="flex items-center justify-between bg-green-100 border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                  <span class="block sm:inline">{{ message }}</span>
+                  <button type="button" onclick="this.parentElement.style.display='none'" class="ml-4">
+                    <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <!-- **** END OF BLOCK **** -->
+
+        <h3 class="text-[#181411] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">All Soaps</h3>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+          {% for product in products %}
+          <div class="flex flex-col gap-3 pb-3">
+            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl" style='background-image: url("{{ product.image }}");'></div>
+            <div class="flex-grow">
+              <p class="text-[#181411] text-base font-medium leading-normal">{{ product.name }}</p>
+              <p class="text-[#887263] text-sm font-normal leading-normal">{{ product.description }}</p>
+              <p class="text-[#181411] text-base font-bold leading-normal pt-1">{{ "PKR %d" | format(product.price) }}</p>
+            </div>
+            <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f2f0] text-[#181411] text-sm font-medium leading-normal">
+              <span class="truncate">Add to Cart</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <div class="fixed bottom-0 left-0 w-full z-10 bg-white">
+        <!-- Bottom Nav Bar -->
+        <div class="flex gap-2 border-t border-[#f4f2f0] px-4 pb-3 pt-2">
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 text-[#887263]" href="{{ url_for('home') }}"><div class="text-[#887263] flex h-8 items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,115.55V208a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V168a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v40a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0l.11.11,80,75.48A16,16,0,0,1,224,115.55Z" path></svg></div><p class="text-[#887263] text-xs font-medium leading-normal tracking-[0.015em]">Home</p></a>
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#181411]" href="{{ url_for('shop') }}"><div class="text-[#181411] flex h-8 items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a48,48,0,0,1-96,0,8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0Z"></path></svg></div><p class="text-[#181411] text-xs font-medium leading-normal tracking-[0.015em]">Shop</p></a>
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 text-[#887263]" href="{{ url_for('cart') }}"><div class="text-[#887263] flex h-8 items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M222.14,58.87A8,8,0,0,0,216,56H54.68L49.79,29.14A16,16,0,0,0,34.05,16H16a8,8,0,0,0,0,16h18L59.56,172.29a24,24,0,0,0,5.33,11.27,28,28,0,1,0,44.4,8.44h45.42A27.75,27.75,0,0,0,152,204a28,28,0,1,0,28-28H83.17a8,8,0,0,1-7.87-6.57L72.13,152h116a24,24,0,0,0,23.61-19.71l12.16-66.86A8,8,0,0,0,222.14,58.87ZM96,204a12,12,0,1,1-12-12A12,12,0,0,1,96,204Zm96,0a12,12,0,1,1-12-12A12,12,0,0,1,192,204Zm4-74.57A8,8,0,0,1,188.1,136H69.22L57.59,72H206.41Z"></path></svg></div><p class="text-[#887263] text-xs font-medium leading-normal tracking-[0.015em]">Cart</p></a>
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 text-[#887263]" href="{{ url_for('admin') }}"><div class="text-[#887263] flex h-8 items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg></div><p class="text-[#887263] text-xs font-medium leading-normal tracking-[0.015em]">Admin</p></a>
+        </div>
+        <div class="h-5"></div>
+      </div>
+    </div>
+  </body>
+</html>

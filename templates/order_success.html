@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Order Successful!</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Epilogue%3Awght%40400%3B500%3B700%3B900&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+  </head>
+  <body class="bg-white" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+    <div class="flex flex-col items-center justify-center min-h-screen text-center p-4">
+      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-check-circle-fill text-green-500 mb-4" viewBox="0 0 16 16">
+        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+      </svg>
+      <h1 class="text-3xl font-bold text-[#181411]">Thank You For Your Order!</h1>
+      <p class="text-lg text-[#887263] mt-2">Your order has been placed successfully.</p>
+      <a href="{{ url_for('home') }}" class="mt-8 inline-block px-8 py-3 bg-[#eac5ad] text-[#171412] font-bold rounded-full">
+        Return to Homepage
+      </a>
+    </div>
+  </body>
+</html>

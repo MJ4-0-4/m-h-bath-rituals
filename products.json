@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Lavender Dream",
+    "description": "Soothing lavender scent",
+    "price": 800,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuB6MF8dCfdWhZbNUkPV82KM0tc6uyPLvNSL-79WH0iGlm3rDsgRvh3bsbEWdGkuVJyR9lsfr8KoRk23Fb_3Tx2yoB-oqj0lUW-YXefQOpXT4XU7kl1mkgeUtCE8d7UzuNBySNVoYDq-hxkdkWmYmFKvwuvJcvba3KnSsg1v5ESu7MJ9hvCJS34xfaL2FRXd488g7J_c6nLU0nAra06cDcPytVPFRvdKBwnYFtU0bPPJHcIf8lJ3rkcJ5dKIY-up5-olkMc0g3nh1M08"
+  },
+  {
+    "id": 2,
+    "name": "Citrus Burst",
+    "description": "Invigorating citrus blend",
+    "price": 800,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuD5r8m_8eDJK-nfbl2K1oR8eAKvOw7GnfTCyFIpZG1MqMjuyIkzwS_NQpL03QKTHC1hhpWi82D77kJVntX_PRZCBuyGwvhQ33pyvrJXjjmuKSIsHhh7PuhpUl8dgwqAJaMzG0GA3PiQMvRxPUvMtBeDk7kqOLDnWLYBT__Ssen4bTvR5Otxf0CGtN6PUfi3V-Z8aqQcyc_EehI4SlKLMzOYS_ROH0xwwWXOajGZGlXdMeXwRvrhjcWQv9z60_NwCJrmQWV-yXkPL6ST"
+  },
+  {
+    "id": 3,
+    "name": "Eucalyptus Bliss",
+    "description": "Refreshing eucalyptus aroma",
+    "price": 850,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAT1ppVjRV0f2mLKTgCTTAm7N8hAQGZsBRUun0yXK5vqFhgufqJRb530hadSfna9tXD_rPl3M9m5Ha9J6ZAPBA6QiHAgl5nCzBP4Q3WISGPWG4ygEl3vyfRvm_Q6wZvLgJ-2tcWjOgxAH1G6Z64GWoyg0gwhlM65EPU8RBQKWWpVLbLuGuXXhHIr6z0JiJ7vQh_zmjs_fdRMWpzVS2AHutHReilx0ZE69_kAmJtHyxM8vI8n4VWC9JJdUF6ckMTj23stAzQZ1wZ5JI4"
+  },
+  {
+    "id": 4,
+    "name": "Rose Garden",
+    "description": "Delicate rose fragrance",
+    "price": 900,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBS-KLa9xhyzxv4IvaW_OGfSDuYRrAu9JQQgRlLeHW1RTm3joC9IZmeSKBrJaCmH7_hShDXJDWZeQHrjouRW0c76jiNKn4uzX08k3ZICkiqKkUXYZ0GFEN94St2RzUgW5PQDyAHDS4UR2N75d9jQtrkgkvmUU4iLxzsgI9QzF1sXwZI6Uk__Tkr4OzfGZQefis2zxTZtebkTgNTfYKO81AgaAdFgd7lDSUgCXzxZPFUzTTfgYWAdlj8XIyGi20bdDtau8PmjrRBCxhz"
+  },
+  {
+    "id": 5,
+    "name": "Ocean Breeze",
+    "description": "Crisp ocean scent",
+    "price": 750,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuARFlNA-wktK7BbXJTdbvzCqAR9p9xGVHC0H8h6A9AtNIAG8A3mWrB8lg_to1nJPZk1tc4GkurL6ndBxV9sRXMzIHNvB84n3PIPtNCBn-vS4lWJiEkPevcLmTLarmHFZW1xBDpsQOUaRsHrO2FfYnsDh1Y5uWVdnuqIxX3XH5sbwJ-6QtERNN-x9Obsm0gtKdsTSC9g8fvyTDptithwCZzAtSHZcmKITXS3SDgRwtk6bfoFZW6PLDh4PsmB5BVRZ89DCR83CIYxmVfj"
+  },
+  {
+    "id": 6,
+    "name": "Vanilla Comfort",
+    "description": "Warm vanilla essence",
+    "price": 750,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDTD3c5m7miGBQGq_1X59AZdZlDfxXcjPwyCSruyZjtVzSLUf7UjDoVGK0vUbxc3LfpG0PmTHZDU0knKZ2s-zQoi7uCJg5DUf1U9iqU9gsFgc2NHrenDTeQgYJ3aywtqj5rUUDB2a32upSJyLioW4MjXkHCC12aesiwGzsvfZ-21i6tkIJ4EJZjn1jo-dDaroyrqpp12Z6LXLUUItBqSZRakZ_sHFemb2AjGnKsWLT9HtoitNalpT9-5b8aboaznRTwJO_n2aQ4qhGH"
+  }
+]
