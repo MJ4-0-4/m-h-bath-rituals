@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Order Confirmation</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; color: #333; }
+        .container { border: 1px solid #ddd; padding: 20px; max-width: 600px; }
+        h1 { color: #ea8542; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f2f0; }
+        .total { font-weight: bold; }
+        .footer { margin-top: 20px; font-size: 0.9em; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Thank You For Your Order, {{ order.full_name }}!</h1>
+        <p>We've received your order and will prepare it for shipping shortly. Your order number is <strong>#{{ order.id }}</strong>.</p>
+        
+        <h2>Order Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>PKR {{ item.item_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Total Cost</h2>
+        <p class="total"><strong>Total Amount:</strong> PKR {{ order.totals.total }}</p>
+
+        <div class="footer">
+            <p><strong>Payment Method:</strong> Cash on Delivery (COD). Please have the exact amount ready.</p>
+            <p>If you have any questions, please contact us.</p>
+            <p>Sincerely,<br>The M&H Bath Rituals Team</p>
+        </div>
+    </div>
+</body>
+</html>

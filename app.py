@@ -5,43 +5,57 @@ from functools import wraps
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message  # New import
 
 # --- Basic Flask App Setup ---
-# Find the absolute path of the project directory
 basedir = os.path.abspath(os.path.dirname(__file__))
-
 app = Flask(__name__)
-# Secret key is needed for sessions
 app.secret_key = 'a-super-secret-key-for-sessions'
-# Configure the database: we will use a file named database.db in our project folder
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize the database extension
+# --- Flask-Mail Configuration ---
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') # Your email
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') # Your email password/app password
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+
+# Initialize extensions
 db = SQLAlchemy(app)
+mail = Mail(app) # New mail instance
 
 # --- Admin Credentials (from Environment Variables) ---
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'password123')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL') # Email to receive notifications
 
 # --- Constants ---
 SHIPPING_COST = 250
 TAX_RATE = 0
 
 # --- DATABASE MODELS ---
-# This is the blueprint for our database tables.
-
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.String(255))
     price = db.Column(db.Integer, nullable=False)
     image = db.Column(db.String(255), nullable=False)
+    # --- New Fields for Sales ---
+    on_sale = db.Column(db.Boolean, default=False, nullable=False)
+    sale_price = db.Column(db.Integer, nullable=True)
+
+    # Helper property to get the current price
+    @property
+    def current_price(self):
+        if self.on_sale and self.sale_price is not None:
+            return self.sale_price
+        return self.price
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
     # Customer Info
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -51,12 +65,10 @@ class Order(db.Model):
     city = db.Column(db.String(100), nullable=False)
     state = db.Column(db.String(100), nullable=False)
     zipcode = db.Column(db.String(50), nullable=False)
-    
     # Order Details (stored as JSON text)
     items_json = db.Column(db.Text, nullable=False)
     totals_json = db.Column(db.Text, nullable=False)
 
-    # Helper properties to load JSON back into dictionaries
     @property
     def items(self):
         return json.loads(self.items_json)
@@ -65,7 +77,7 @@ class Order(db.Model):
     def totals(self):
         return json.loads(self.totals_json)
 
-# --- LOGIN DECORATOR (No changes) ---
+# --- LOGIN DECORATOR ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -75,19 +87,21 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- CART HELPER FUNCTION (No changes, but now uses the Product model) ---
+# --- CART HELPER FUNCTION (UPDATED) ---
 def get_cart_details():
+    """Calculates cart totals, now using sale prices if applicable."""
     cart_items, totals = [], {}
     subtotal = 0
     cart_ids = session.get('cart', {})
     for product_id, quantity in cart_ids.items():
-        # Query the database for the product
         product = db.session.get(Product, int(product_id))
         if product:
-            item_total = product.price * quantity
+            # Use the current_price property which handles sales
+            price_to_use = product.current_price
+            item_total = price_to_use * quantity
             subtotal += item_total
             cart_items.append({
-                'id': product.id, 'name': product.name, 'price': product.price,
+                'id': product.id, 'name': product.name, 'price': price_to_use,
                 'image': product.image, 'quantity': quantity, 'item_total': item_total
             })
     shipping = SHIPPING_COST if subtotal > 0 else 0
@@ -96,6 +110,36 @@ def get_cart_details():
     totals = {'subtotal': subtotal, 'shipping': shipping, 'tax': tax, 'total': total}
     return cart_items, totals
 
+# --- EMAIL HELPER FUNCTION (NEW) ---
+def send_order_emails(order):
+    """Sends confirmation emails to admin and customer."""
+    if not ADMIN_EMAIL or not app.config.get('MAIL_USERNAME'):
+        print("WARN: MAIL_USERNAME or ADMIN_EMAIL not set. Skipping emails.")
+        return
+    try:
+        # Email to Admin
+        admin_msg = Message(
+            subject=f"New Order Received: #{order.id}",
+            recipients=[ADMIN_EMAIL]
+        )
+        admin_msg.html = render_template('email/admin_notification.html', order=order)
+        mail.send(admin_msg)
+
+        # Email to Customer
+        customer_msg = Message(
+            subject="Your M&H Bath Rituals Order Confirmation",
+            recipients=[order.email]
+        )
+        customer_msg.html = render_template('email/customer_confirmation.html', order=order)
+        mail.send(customer_msg)
+        
+        print(f"Order emails sent for Order #{order.id}")
+
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        flash("Order placed successfully, but there was an issue sending confirmation emails.", "warning")
+
+
 # --- FRONTEND ROUTES ---
 @app.route('/')
 def home():
@@ -103,7 +147,6 @@ def home():
 
 @app.route('/shop')
 def shop():
-    # Get all products from the database
     all_products = Product.query.order_by(Product.id).all()
     return render_template('shop.html', products=all_products)
 
@@ -148,12 +191,11 @@ def order_success():
 
 @app.route('/place-order', methods=['POST'])
 def place_order():
-    """Saves the order to the database, then clears the cart."""
+    """Saves order, sends emails, then clears cart."""
     cart_items, totals = get_cart_details()
     if not cart_items:
         return redirect(url_for('shop'))
     
-    # Create a new Order object and save it to the database
     new_order = Order(
         full_name=request.form.get('fullname'),
         email=request.form.get('email'),
@@ -170,10 +212,13 @@ def place_order():
     db.session.add(new_order)
     db.session.commit()
     
+    # --- Send emails after successful commit ---
+    send_order_emails(new_order)
+    
     session.pop('cart', None)
     return redirect(url_for('order_success'))
 
-# --- AUTHENTICATION ROUTES (No changes) ---
+# --- AUTHENTICATION ROUTES ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -209,16 +254,51 @@ def admin_orders():
 @app.route('/add-product', methods=['POST'])
 @login_required
 def add_product():
+    sp = request.form.get('sale_price')
     new_product = Product(
         name=request.form.get('name'),
         description=request.form.get('description'),
         price=int(request.form.get('price')),
-        image=request.form.get('image')
+        image=request.form.get('image'),
+        # Handle new sale fields
+        on_sale=bool(request.form.get('on_sale')),
+        sale_price=int(sp) if sp else None
     )
     db.session.add(new_product)
     db.session.commit()
     flash(f'Product "{new_product.name}" added successfully!', 'success')
     return redirect(url_for('admin'))
+
+# --- NEW: Edit Product Routes ---
+@app.route('/admin/edit-product/<int:product_id>', methods=['GET'])
+@login_required
+def edit_product(product_id):
+    product = db.session.get(Product, product_id)
+    if not product:
+        flash('Product not found!', 'danger')
+        return redirect(url_for('admin'))
+    return render_template('edit_product.html', product=product)
+
+@app.route('/admin/update-product/<int:product_id>', methods=['POST'])
+@login_required
+def update_product(product_id):
+    product_to_update = db.session.get(Product, product_id)
+    if not product_to_update:
+        flash('Product not found!', 'danger')
+        return redirect(url_for('admin'))
+    
+    sp = request.form.get('sale_price')
+    product_to_update.name = request.form.get('name')
+    product_to_update.description = request.form.get('description')
+    product_to_update.price = int(request.form.get('price'))
+    product_to_update.image = request.form.get('image')
+    product_to_update.on_sale = True if request.form.get('on_sale') == 'on' else False
+    product_to_update.sale_price = int(sp) if sp and product_to_update.on_sale else None
+    
+    db.session.commit()
+    flash(f'Product "{product_to_update.name}" updated successfully!', 'success')
+    return redirect(url_for('admin'))
+# --- END NEW ROUTES ---
 
 @app.route('/delete-product/<int:product_id>')
 @login_required
@@ -230,5 +310,12 @@ def delete_product(product_id):
         flash(f'Product deleted successfully!', 'success')
     return redirect(url_for('admin'))
 
+
 if __name__ == '__main__':
+    # Before running, make sure to delete database.db and run init_db.py
+    # to apply the new Product model schema.
+    if not all([app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'], ADMIN_EMAIL]):
+        print("\nWARNING: Email environment variables not set.")
+        print("Set MAIL_USERNAME, MAIL_PASSWORD, and ADMIN_EMAIL to enable email features.\n")
+    
     app.run(debug=True)

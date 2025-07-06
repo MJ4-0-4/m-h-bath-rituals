@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Order Notification</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; color: #333; }
+        .container { border: 1px solid #ddd; padding: 20px; max-width: 600px; }
+        h1 { color: #5a2d82; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>New Order Received! (#{{ order.id }})</h1>
+        <p>A new order was placed on {{ order.date_created.strftime('%B %d, %Y') }}.</p>
+
+        <h2>Customer Details</h2>
+        <p><strong>Name:</strong> {{ order.full_name }}</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p><strong>Shipping Address:</strong><br>
+            {{ order.address1 }}<br>
+            {% if order.address2 %}{{ order.address2 }}<br>{% endif %}
+            {{ order.city }}, {{ order.state }} {{ order.zipcode }}
+        </p>
+
+        <h2>Order Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>PKR {{ item.item_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Totals</h2>
+        <p><strong>Subtotal:</strong> PKR {{ order.totals.subtotal }}</p>
+        <p><strong>Shipping:</strong> PKR {{ order.totals.shipping }}</p>
+        <p class="total"><strong>Total:</strong> PKR {{ order.totals.total }}</p>
+    </div>
+</body>
+</html>
