@@ -1,39 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>New Order Notification</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order Received</title>
     <style>
         body { font-family: sans-serif; margin: 20px; color: #333; }
-        .container { border: 1px solid #ddd; padding: 20px; max-width: 600px; }
-        h1 { color: #5a2d82; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .total { font-weight: bold; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        .header { font-size: 24px; font-weight: bold; color: #4A5568; margin-bottom: 20px; }
+        .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .item-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .item-table th, .item-table td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        .item-table th { background-color: #f7fafc; }
+        .totals-table { width: 100%; margin-top: 20px; }
+        .totals-table td { padding: 5px 0; }
+        .text-right { text-align: right; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>New Order Received! (#{{ order.id }})</h1>
+        <div class="header">New Order Received! (#{{ order.id }})</div>
         <p>A new order was placed on {{ order.date_created.strftime('%B %d, %Y') }}.</p>
 
-        <h2>Customer Details</h2>
-        <p><strong>Name:</strong> {{ order.full_name }}</p>
-        <p><strong>Email:</strong> {{ order.email }}</p>
-        <p><strong>Phone:</strong> {{ order.phone }}</p>
-        <p><strong>Shipping Address:</strong><br>
+        <div class="section-title">Customer Details</div>
+        <p>
+            <strong>Name:</strong> {{ order.full_name }}<br>
+            <strong>Email:</strong> {{ order.email }}<br>
+            <strong>Phone:</strong> {{ order.phone }}<br>
+            <strong>Shipping Address:</strong><br>
             {{ order.address1 }}<br>
             {% if order.address2 %}{{ order.address2 }}<br>{% endif %}
             {{ order.city }}, {{ order.state }} {{ order.zipcode }}
         </p>
 
-        <h2>Order Summary</h2>
-        <table>
+        <div class="section-title">Order Summary</div>
+        <table class="item-table">
             <thead>
                 <tr>
                     <th>Item</th>
                     <th>Quantity</th>
-                    <th>Price</th>
+                    <th class="text-right">Price</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,16 +47,26 @@
                 <tr>
                     <td>{{ item.name }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>PKR {{ item.item_total }}</td>
+                    <td class="text-right">PKR {{ item.item_total }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <h2>Totals</h2>
-        <p><strong>Subtotal:</strong> PKR {{ order.totals.subtotal }}</p>
-        <p><strong>Shipping:</strong> PKR {{ order.totals.shipping }}</p>
-        <p class="total"><strong>Total:</strong> PKR {{ order.totals.total }}</p>
+        <table class="totals-table">
+            <tr>
+                <td>Subtotal:</td>
+                <td class="text-right">PKR {{ order.totals.subtotal }}</td>
+            </tr>
+            <tr>
+                <td>Shipping:</td>
+                <td class="text-right">PKR {{ order.totals.shipping }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total:</strong></td>
+                <td class="text-right"><strong>PKR {{ order.totals.total }}</strong></td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>
