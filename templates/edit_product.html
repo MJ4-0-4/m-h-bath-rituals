@@ -13,7 +13,7 @@
                 <a href="{{ url_for('admin') }}" class="text-sm text-blue-600 hover:underline">← Back to Admin</a>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <form action="{{ url_for('update_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <form action="{{ url_for('edit_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
@@ -22,7 +22,6 @@
                         <div>
                             <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
                             <select name="category_id" id="category_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="" disabled>Select a category</option>
                                 {% for category in categories %}
                                 <option value="{{ category.id }}" {% if product.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
                                 {% endfor %}
@@ -40,30 +39,31 @@
                     </div>
                     <div>
                         <label for="ingredients" class="block text-sm font-medium text-gray-700">Ingredients</label>
-                        <textarea name="ingredients" id="ingredients" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ product.ingredients or '' }}</textarea>
+                        <textarea name="ingredients" id="ingredients" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{{ product.ingredients or '' }}</textarea>
                     </div>
                     <div>
                         <label for="how_to_use" class="block text-sm font-medium text-gray-700">How to Use</label>
-                        <textarea name="how_to_use" id="how_to_use" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ product.how_to_use or '' }}</textarea>
+                        <textarea name="how_to_use" id="how_to_use" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{{ product.how_to_use or '' }}</textarea>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="price" class="block text-sm font-medium text-gray-700">Original Price</label>
-                            <input type="number" name="price" id="price" value="{{ product.price }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    
+                    <h3 class="text-lg font-medium text-gray-900 pt-4 border-t">Product Variants (Sizes & Prices)</h3>
+                    <div id="variants-container" class="space-y-2">
+                        {% for variant in product.variants %}
+                        <div class="flex items-center gap-2 variant-row">
+                            <input type="text" name="size[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Size (e.g., 100g)" value="{{ variant.size }}" required>
+                            <input type="number" name="price[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Price (PKR)" value="{{ variant.price }}" required>
+                            <button type="button" class="text-red-500 remove-variant-btn {{ 'hidden' if loop.first }} text-2xl font-bold">&times;</button>
                         </div>
-                        <div>
-                            <label for="sale_price" class="block text-sm font-medium text-gray-700">Sale Price (Optional)</label>
-                            <input type="number" name="sale_price" id="sale_price" value="{{ product.sale_price or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        {% else %}
+                        <div class="flex items-center gap-2 variant-row">
+                            <input type="text" name="size[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Size (e.g., 100g)" required>
+                            <input type="number" name="price[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Price (PKR)" required>
+                            <button type="button" class="text-red-500 remove-variant-btn hidden text-2xl font-bold">&times;</button>
                         </div>
+                        {% endfor %}
                     </div>
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input id="on_sale" name="on_sale" type="checkbox" {% if product.on_sale %}checked{% endif %} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <label for="on_sale" class="font-medium text-gray-700">Product is on Sale</label>
-                        </div>
-                    </div>
+                    <button type="button" id="add-variant-btn" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-semibold">+ Add another size</button>
+
                     <div>
                         <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Update Product</button>
                     </div>
@@ -71,5 +71,20 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('add-variant-btn').addEventListener('click', function() {
+            const container = document.getElementById('variants-container');
+            const newRow = container.querySelector('.variant-row').cloneNode(true);
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelector('.remove-variant-btn').classList.remove('hidden');
+            container.appendChild(newRow);
+        });
+        document.getElementById('variants-container').addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-variant-btn')) {
+                e.target.closest('.variant-row').remove();
+            }
+        });
+    </script>
 </body>
 </html>
