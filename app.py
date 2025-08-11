@@ -21,7 +21,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
 
 # --- Flask-Mail Configuration ---
-# This section now correctly reads from the .env file loaded above
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -42,7 +41,7 @@ ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
 SHIPPING_COST = 250
 TAX_RATE = 0
 
-# --- DATABASE MODELS ---
+# --- DATABASE MODELS (UPDATED) ---
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
@@ -57,6 +56,9 @@ class Product(db.Model):
     on_sale = db.Column(db.Boolean, default=False, nullable=False)
     sale_price = db.Column(db.Integer, nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    # --- NEW FIELDS ---
+    ingredients = db.Column(db.Text, nullable=True)
+    how_to_use = db.Column(db.Text, nullable=True)
 
     @property
     def current_price(self):
@@ -64,6 +66,7 @@ class Product(db.Model):
             return self.sale_price
         return self.price
 
+# ... (Order Model and Login Decorator remain the same) ...
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -83,17 +86,15 @@ class Order(db.Model):
     @property
     def totals(self): return json.loads(self.totals_json)
 
-# --- LOGIN DECORATOR ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session:
-            flash('Please log in to access this page.', 'danger')
-            return redirect(url_for('login'))
+        if 'logged_in' not in session: return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
-# --- HELPER FUNCTIONS ---
+
+# --- HELPER FUNCTIONS (No changes needed) ---
 def get_cart_details():
     cart_items, totals = [], {}
     subtotal = 0
@@ -113,7 +114,7 @@ def get_cart_details():
 
 def send_order_emails(order):
     if not ADMIN_EMAIL or not app.config.get('MAIL_USERNAME'):
-        print("WARN: Email features disabled. Set MAIL_USERNAME and ADMIN_EMAIL.")
+        print("WARN: Email features disabled.")
         return
     try:
         admin_msg = Message(subject=f"New Order Received: #{order.id}", recipients=[ADMIN_EMAIL])
@@ -127,7 +128,7 @@ def send_order_emails(order):
         print(f"\n--- EMAIL SENDING FAILED: {e} ---\n")
         flash("Order placed, but confirmation emails could not be sent.", "warning")
 
-# --- ALL ROUTES ---
+# --- FRONTEND ROUTES (UPDATED) ---
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -137,31 +138,48 @@ def shop():
     categories = Category.query.all()
     return render_template('shop.html', categories=categories)
 
+# --- NEW ROUTE FOR PRODUCT DETAILS ---
+# In app.py
+
+# --- UPDATED ROUTE FOR PRODUCT DETAILS ---
+@app.route('/product/<int:product_id>')
+def product_detail(product_id):
+    # Get the main product the user is viewing
+    product = db.session.get(Product, product_id)
+    if not product:
+        flash("Product not found.", "danger")
+        return redirect(url_for('shop'))
+
+    # --- NEW LOGIC: Find related products ---
+    # Query for products that are in the same category but are NOT the current product itself.
+    related_products = Product.query.filter_by(category_id=product.category_id).filter(Product.id != product_id).limit(4).all()
+
+    # Pass both the main product AND the list of related products to the template
+    return render_template('product_detail.html', product=product, related_products=related_products)
+
+# ... (Cart and Checkout routes remain the same) ...
 @app.route('/cart')
 def cart():
     cart_items, totals = get_cart_details()
     return render_template('cart.html', cart_items=cart_items, totals=totals)
-
 @app.route('/add-to-cart/<int:product_id>')
 def add_to_cart(product_id):
     cart = session.get('cart', {})
     cart[str(product_id)] = cart.get(str(product_id), 0) + 1
     session['cart'] = cart
     flash('Added to cart!', 'success')
+    # Redirect back to the page the user was on
     return redirect(request.referrer or url_for('shop'))
-
 @app.route('/remove-from-cart/<int:product_id>')
 def remove_from_cart(product_id):
     cart = session.get('cart', {})
     if str(product_id) in cart: del cart[str(product_id)]
     session['cart'] = cart
     return redirect(url_for('cart'))
-
 @app.route('/clear-cart')
 def clear_cart():
     session.pop('cart', None)
     return redirect(url_for('cart'))
-
 @app.route('/checkout')
 def checkout():
     cart_items, totals = get_cart_details()
@@ -169,12 +187,10 @@ def checkout():
         flash("Your cart is empty.", "warning")
         return redirect(url_for('shop'))
     return render_template('checkout.html', cart_items=cart_items, totals=totals)
-
 @app.route('/place-order', methods=['POST'])
 def place_order():
     cart_items, totals = get_cart_details()
-    if not cart_items:
-        return redirect(url_for('shop'))
+    if not cart_items: return redirect(url_for('shop'))
     new_order = Order(
         full_name=request.form.get('fullname'), email=request.form.get('email'),
         phone=request.form.get('phone'), address1=request.form.get('address1'),
@@ -187,11 +203,11 @@ def place_order():
     send_order_emails(new_order)
     session.pop('cart', None)
     return redirect(url_for('order_success'))
-
 @app.route('/order-success')
 def order_success():
     return render_template('order_success.html')
 
+# --- ADMIN & AUTH ROUTES (UPDATED) ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -233,10 +249,10 @@ def add_category():
 @app.route('/add-product', methods=['POST'])
 @login_required
 def add_product():
+    # ... (file handling code is the same) ...
     if 'image' not in request.files or request.files['image'].filename == '':
         flash('Product image is required.', 'danger')
         return redirect(url_for('admin'))
-    
     file = request.files['image']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -252,7 +268,10 @@ def add_product():
         name=request.form.get('name'), description=request.form.get('description'),
         price=int(request.form.get('price')), image=image_db_path,
         on_sale=True if request.form.get('on_sale') else False,
-        sale_price=int(sp) if sp else None, category_id=int(category_id)
+        sale_price=int(sp) if sp else None, category_id=int(category_id),
+        # --- ADDING NEW DATA ---
+        ingredients=request.form.get('ingredients'),
+        how_to_use=request.form.get('how_to_use')
     )
     db.session.add(new_product)
     db.session.commit()
@@ -277,12 +296,14 @@ def update_product(product_id):
         flash('Product not found!', 'danger')
         return redirect(url_for('admin'))
 
+    # ... (file handling code is the same) ...
     if 'image' in request.files and request.files['image'].filename != '':
         file = request.files['image']
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         product.image = os.path.join('uploads', filename).replace('\\', '/')
 
+    # ... (other fields are the same) ...
     category_id = request.form.get('category_id')
     if not category_id:
         flash('You must select a category.', 'danger')
@@ -295,11 +316,15 @@ def update_product(product_id):
     product.on_sale = True if request.form.get('on_sale') else False
     product.sale_price = int(sp) if sp and product.on_sale else None
     product.category_id = int(category_id)
+    # --- UPDATING NEW DATA ---
+    product.ingredients = request.form.get('ingredients')
+    product.how_to_use = request.form.get('how_to_use')
     
     db.session.commit()
     flash(f'Product "{product.name}" updated.', 'success')
     return redirect(url_for('admin'))
 
+# ... (delete_product, init-db, and main execution block remain the same) ...
 @app.route('/delete-product/<int:product_id>')
 @login_required
 def delete_product(product_id):
@@ -309,8 +334,6 @@ def delete_product(product_id):
         db.session.commit()
         flash(f'Product deleted.', 'success')
     return redirect(url_for('admin'))
-
-# --- DATABASE COMMAND ---
 @app.cli.command("init-db")
 def init_db_command():
     db.drop_all()
@@ -320,7 +343,6 @@ def init_db_command():
         db.session.add(Category(name=cat_name))
     db.session.commit()
     print("Initialized the database and created default categories.")
-
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
